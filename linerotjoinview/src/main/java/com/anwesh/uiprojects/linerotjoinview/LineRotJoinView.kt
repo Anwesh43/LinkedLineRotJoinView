@@ -36,7 +36,7 @@ fun Canvas.drawLineRotJoin(i : Int, size : Float, sc1 : Float, sc2 : Float, pain
     val sfi : Float = 1f - 2 * i
     save()
     translate(size / 2 * sfi, 0f)
-    drawLine(0f, 0f, size / 2 * sc2.divideScale(i, lines) * sfi, 0f, )
+    drawLine(0f, 0f, size / 2 * sc2.divideScale(i, lines) * sfi, 0f, paint)
     rotate(rotDeg * sc1.divideScale(i, lines) * sfi)
     drawLine(0f, 0f, 0f, -size, paint)
     restore()
@@ -75,5 +75,25 @@ class LineRotJoinView(ctx : Context) : View(ctx) {
             }
         }
         return true
+    }
+
+    data class State(var scale : Float = 0f, var dir : Float = 0f, var prevScale : Float = 0f) {
+
+        fun update(cb : (Float) -> Unit) {
+            scale += scale.updateValue(dir, lines, lines)
+            if (Math.abs(scale - prevScale) > 1) {
+                scale = prevScale + dir
+                dir = 0f
+                prevScale = scale
+                cb(prevScale)
+            }
+        }
+
+        fun startUpdating(cb : () -> Unit) {
+            if (dir == 0f) {
+                dir = 1f - 2 * prevScale
+                cb()
+            }
+        }
     }
 }
